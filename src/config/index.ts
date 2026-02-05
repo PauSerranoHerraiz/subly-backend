@@ -3,7 +3,8 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
-const ORIGIN = process.env.ORIGIN || "http://localhost:3000";
+const RAW_ORIGIN = process.env.ORIGIN || "http://localhost:3000";
+const ORIGIN = RAW_ORIGIN.replace(/\/$/, "");
 
 export default (app: Application) => {
   app.use(
