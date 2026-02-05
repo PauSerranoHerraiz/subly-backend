@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+}
+
+enum SubscriptionEventType {
+  CREATED
+  UPDATED
+  CANCELLED
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(MEMBER)
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  customers Customer[]
+
+  @@index([companyId])
+}
+
+model Company {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  users     User[]
+  customers Customer[]
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  companyId   String
+  name        String
+  email       String
+  companyName String
+  phone       String?
+  createdAt   DateTime @default(now())
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  subscription Subscription?
+  user         User?         @relation(fields: [userId], references: [id])
+  userId       String?
+
+  @@index([companyId])
+}
+
+model Plan {
+  id           String   @id @default(uuid())
+  name         String
+  priceMonthly Int
+  createdAt    DateTime @default(now())
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id         String             @id @default(uuid())
+  customerId String             @unique
+  planId     String
+  status     SubscriptionStatus
+  startedAt  DateTime           @default(now())
+  endedAt    DateTime?
+
+  customer Customer            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  plan     Plan                @relation(fields: [planId], references: [id])
+  events   SubscriptionEvent[]
+
+  @@index([status])
+  @@index([planId])
+}
+
+model SubscriptionEvent {
+  id             String                @id @default(uuid())
+  subscriptionId String
+  type           SubscriptionEventType
+  createdAt      DateTime              @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+}
