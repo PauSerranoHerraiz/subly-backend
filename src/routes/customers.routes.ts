@@ -51,7 +51,7 @@ router.post("/", async (req: Request, res: Response) => {
 
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const companyId = req.auth!.companyId;
 
     const customer = await prisma.customer.findFirst({

@@ -22,21 +22,24 @@ router.post("/", async (req: Request, res: Response) => {
 
 router.put("/:id", async (req: Request, res: Response) => {
   const { name, priceMonthly } = req.body;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
   try {
     const updated = await prisma.plan.update({
-      where: { id: req.params.id },
+      where: { id },
       data: { name, priceMonthly },
     });
     res.json(updated);
   } catch {
     res.status(404).json({ message: "Plan not found" });
   }
-})
+});
 
 router.delete("/:id", async (req: Request, res: Response) => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
   try {
-    await prisma.plan.delete({ where: { id: req.params.id } });
+    await prisma.plan.delete({ where: { id } });
     res.json({ message: "Plan deleted" });
   } catch {
     res.status(404).json({ message: "Plan not found" });
